@@ -1,16 +1,30 @@
 import numpy as np
 import cv2
 
+def center (x, y, w,h):
+    x1 = int(w / 2)
+    y1 = int(h / 2)
+    cx = x +x1
+    cy = y + y1
+    return cx, cy
 cap = cv2.VideoCapture(0, cv2.CAP_DSHOW)
 
 fgbg = cv2.createBackgroundSubtractorMOG2()
+
 
 if not cap.isOpened():
     print("nao abriu")
     exit()
     
-windowName = "webcam"    
-    
+windowName = "webcam"
+
+posL = 250
+offset = 30
+
+xy1 = (0, posL)  # Extremidade esquerda da tela
+
+detects = []
+
 
 while 1:
     ret, frame = cap.read()
@@ -19,7 +33,13 @@ while 1:
         print("Sem frame")
         break
     
+    xy2 = (frame.shape[1], posL)  # Extremidade direita da tela (largura do quadro)s
+    
     gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
+    
+    cv2.line(frame, xy1, xy2, (255, 0, 0), 3)
+     
+    cv2.imshow("frame", frame)
     
     fgmask = fgbg.apply(gray)
     
@@ -35,15 +55,48 @@ while 1:
     
     countours, hierarchy = cv2.findContours(closing, cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)
     
+    cv2.line(frame, xy1, xy2,(255,0,0), 3)
+    
+    cv2.line(frame,(xy1[0],posL-offset),(xy2[0],posL-offset),(255,255,0),2)
+    
+    cv2.line(frame,(xy1[0],posL+offset),(xy2[0],posL+offset),(255,255,0),2)
+    
+    i = 0
     for cnt in countours:
         (x,y,w,h) = cv2.boundingRect(cnt)
         area = cv2.contourArea(cnt)
         
-        cv2.rectangle(frame,(x,y), (x + w, y + h), (0,255,9), 2)
+        detect = []
+        
+        if int(area) < 3000:
+           centro = center(x, y, w, h)
+        
+           cv2.putText(frame, str(i), (x+5, y+15), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 255, 255), 2)
+           cv2.circle(frame, centro, 4, (0, 0, 255), -1)
+           cv2.rectangle(frame, (x, y), (x + w, y + h), (0, 255, 9), 2)
+        
+           if centro[1] > posL - offset and centro[1] < posL + offset:
+              detect.append(centro)  # Adicionar centro à lista detect
+        
+        i += 1
+        
+    detects.append(detect)       
+    
+    if len(countours) == 0:
+       for detect in detects:
+          detect.clear()  # Limpar todas as listas em detects
+    else:
+       for detect in detects:
+           if len(detect) > 0:
+               for (c, i) in enumerate(detect):
+                  if c > 0:
+                    cv2.line(frame, detect[c - 1], i, (0, 0, 255), 1)
+    
+    print(detect)                   
+        
     cv2.imshow("frame", frame)
-    cv2.imshow("fgmask", fgmask)
     cv2.imshow(windowName, gray)
-    cv2.imshow("th", th)
+    cv2.imshow("closing", closing)
     
     
     k = cv2.waitKey(1)
