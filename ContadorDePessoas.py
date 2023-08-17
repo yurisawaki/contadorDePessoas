@@ -25,6 +25,12 @@ xy1 = (0, posL)  # Extremidade esquerda da tela
 
 detects = []
 
+total = 0
+
+up = 0
+
+down = 0
+
 
 while 1:
     ret, frame = cap.read()
@@ -75,24 +81,47 @@ while 1:
            cv2.circle(frame, centro, 4, (0, 0, 255), -1)
            cv2.rectangle(frame, (x, y), (x + w, y + h), (0, 255, 9), 2)
         
-           if centro[1] > posL - offset and centro[1] < posL + offset:
-              detect.append(centro)  # Adicionar centro à lista detect
+           if len(detects) <= i:
+               detects.append([])
+           if centro[1]> posL-offset and centro[1]< posL+offset:
+               detects[i].append(centro)
+           else:
+               detects[i].clear()    
+               
         
-        i += 1
-        
-    detects.append(detect)       
+           i += 1        
+    if i == 0:
+        detect.clear()
+ 
     
     if len(countours) == 0:
        for detect in detects:
-          detect.clear()  # Limpar todas as listas em detects
+          detects.clear()  # Limpar todas as listas em detects
     else:
        for detect in detects:
            if len(detect) > 0:
                for (c, i) in enumerate(detect):
-                  if c > 0:
-                    cv2.line(frame, detect[c - 1], i, (0, 0, 255), 1)
-    
-    print(detect)                   
+                if detect[c - 1][1] < posL and detect[c][1] > posL:
+                    detect.clear()
+                    up += 1
+                    total += 1
+                    cv2.line(frame, xy1, xy2, (0, 0, 255), 5)
+                    continue
+                 
+                if detect[c - 1][1] > posL and detect[c][1] < posL:
+                    detect.clear()
+                    down += 1
+                    total += 1
+                    cv2.line(frame, xy1, xy2, (0, 0, 255), 5)
+                    continue
+                
+                if c > 0 :
+                    cv2.line(frame, detect[c - 1],detect[c - 1],(0,0,255),1)
+                    
+    cv2.putText(frame, "total: "+str(total),(10, 20), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0,255,255),2)   
+    cv2.putText(frame, "subindo: "+str(up),(10, 40), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0,255,0),2)    
+    cv2.putText(frame, "descendo: "+str(down),(10, 60), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0,0,255),2)               
+                       
         
     cv2.imshow("frame", frame)
     cv2.imshow(windowName, gray)
@@ -108,6 +137,7 @@ while 1:
         break
     
 cv2.destroyAllWindows()
+cap.release()
 cap.release()
 
 
