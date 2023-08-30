@@ -7,19 +7,16 @@ def center (x, y, w,h):
     cx = x +x1
     cy = y + y1
     return cx, cy
-cap = cv2.VideoCapture(0, cv2.CAP_DSHOW)
+cap = cv2.VideoCapture("detectionTest.mp4")
 
 fgbg = cv2.createBackgroundSubtractorMOG2()
 
 
-if not cap.isOpened():
-    print("nao abriu")
-    exit()
     
 windowName = "webcam"
 
-posL = 250
-offset = 30
+posL = 150
+offset = 20
 
 xy1 = (0, posL)  # Extremidade esquerda da tela
 
@@ -35,9 +32,6 @@ down = 0
 while 1:
     ret, frame = cap.read()
     
-    if not ret:
-        print("Sem frame")
-        break
     
     xy2 = (frame.shape[1], posL)  # Extremidade direita da tela (largura do quadro)s
     
@@ -74,7 +68,7 @@ while 1:
         
         detect = []
         
-        if int(area) < 3000:
+        if int(area) < 11000 or int(area) < 20000:
            centro = center(x, y, w, h)
         
            cv2.putText(frame, str(i), (x+5, y+15), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 255, 255), 2)
@@ -91,7 +85,7 @@ while 1:
         
            i += 1        
     if i == 0:
-        detect.clear()
+        detects.clear()
  
     
     if len(countours) == 0:
@@ -125,12 +119,13 @@ while 1:
         
     cv2.imshow("frame", frame)
     cv2.imshow(windowName, gray)
-    cv2.imshow("closing", closing)
+    
+    
     
     
     k = cv2.waitKey(1)
     
-    if k == ord('s'):
+    if k == ord('q'):
         break
     
     if cv2.getWindowProperty(windowName, cv2.WND_PROP_VISIBLE) < 1:
@@ -138,7 +133,4 @@ while 1:
     
 cv2.destroyAllWindows()
 cap.release()
-cap.release()
-
-
     
