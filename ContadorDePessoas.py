@@ -57,7 +57,7 @@ down = 0
 for frame in camera.capture_continuous(raw_capture, format='bgr', use_video_port=True):
     image = frame.array
 
-    xy2 = (image.shape[1], posL)  # Extremidade direita da tela (largura do quadro)
+    xy2 = (image.shape[1], posL)
 
     gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
 
