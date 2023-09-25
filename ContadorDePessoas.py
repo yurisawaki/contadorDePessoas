@@ -2,6 +2,8 @@ import cv2
 import numpy as np
 from picamera.array import PiRGBArray
 from picamera import PiCamera
+import paho.mqtt.client as mqtt
+import time
 
 def center(x, y, w, h):
     x1 = int(w / 2)
@@ -10,7 +12,31 @@ def center(x, y, w, h):
     cy = y + y1
     return cx, cy
 
-# Inicializa a Picamera
+
+MQTT_BROKER = "192.168.100.42"  
+MQTT_PORT = 1883
+MQTT_TOPIC = "contagem_de_pessoas"
+
+
+pessoas = 0
+
+# callback
+def on_publish(client, userdata, mid):
+    print("Mensagem publicada com sucesso")
+
+# 
+def on_disconnect(client, userdata, rc):
+    if rc != 0:
+        print("Tentando reconectar...")
+        client.reconnect()
+
+# Cliente MQTT
+client = mqtt.Client()
+client.connect(MQTT_BROKER, MQTT_PORT, 60)
+client.on_publish = on_publish
+client.on_disconnect = on_disconnect  
+
+
 camera = PiCamera()
 camera.resolution = (640, 480)
 raw_capture = PiRGBArray(camera, size=(640, 480))
@@ -20,7 +46,7 @@ fgbg = cv2.createBackgroundSubtractorMOG2()
 posL = 150
 offset = 20
 
-xy1 = (0, posL)  # Extremidade esquerda da tela
+xy1 = (0, posL)  
 
 detects = []
 
@@ -93,5 +119,12 @@ for frame in camera.capture_continuous(raw_capture, format='bgr', use_video_port
 
     log_info = f"Total: {total}, Subindo: {up}, Descendo: {down}"
     print(log_info)
+
+    # Publicar a contagem de pessoas 
+    try:
+        client.publish(MQTT_TOPIC, log_info)
+    except (ConnectionError, OSError):
+        print("Reconectando...")
+        client.reconnect()
 
     raw_capture.truncate(0)
