@@ -9,7 +9,7 @@ def center(x, y, w, h):
     return cx, cy
 
 # Configurar informações de conexão MQTT
-MQTT_BROKER = "broker.emqx.io"  # Substitua pelo endereço IP ou nome do host do seu broker MQTT
+MQTT_BROKER = "broker.emqx.io"  
 MQTT_PORT = 1883
 MQTT_TOPIC1 = "/UFPA/LAAI/contagem_de_pessoas/entrada/"
 MQTT_TOPIC2 = "/UFPA/LAAI/contagem_de_pessoas/saida/"
