@@ -33,7 +33,7 @@ client.on_publish = on_publish
 client.on_disconnect = on_disconnect  # Configurar a função de callback de desconexão
 
 # Inicializa a webcam
-cap = cv2.VideoCapture(0)  # 0 é o índice da webcam padrão, você pode alterá-lo conforme necessário
+cap = cv2.VideoCapture(0)  # 0 é o índice da webcam padrão
 
 fgbg = cv2.createBackgroundSubtractorMOG2()
 
@@ -122,7 +122,6 @@ while True:
                             client.publish(MQTT_TOPIC2, info_saida)
                             continue
 
-        # Mostrar a janela de visualização do vídeo
         cv2.imshow("Visualização da Webcam", frame)
 
         # Se pressionar a tecla 'q', sair do loop
